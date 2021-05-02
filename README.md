@@ -6,7 +6,7 @@ Additionally:
 * Beeps every X seconds if the float switch is in an alert state. (see settings inside ```main.py```)
 * Sends notifications via Pushover (https://pushover.net) on state changes.
 
-**Be sure to set your settings inside ```settings.py```!**
+**Be sure to set your settings inside ```settings.py```! Use ```settings.py.example``` for help**
 
 ## Wiring
 
