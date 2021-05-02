@@ -2,9 +2,11 @@
 MicroPython code to control an aquarium filter- turning it off and sending a pushover notification if a float switch is triggered (to prevent tank overflowing).
 
 Additionally:
-* Beeps every 1hr if network is down
-* Beeps every 30s if the float switch is in an alert state.
-* Sends notifications via Pushover <pushover.net> on state changes.
+* Beeps every X seconds if network is down (see settings inside ```main.py```)
+* Beeps every X seconds if the float switch is in an alert state. (see settings inside ```main.py```)
+* Sends notifications via Pushover (https://pushover.net) on state changes.
+
+**Be sure to set your settings inside ```settings.py```!**
 
 ## Wiring
 
@@ -18,19 +20,16 @@ Additionally:
 
 * Non-blocking WiFi connection (if Wifi is down, control still continues!)
 * Pushover notifications sent on state changes (startup, alert, recovery)
-* Beeps once an hour if WiFi not connected
-* Beeps every 30mins if float switch in an alert state
+* Beeps regularly (configurable) if WiFi not connected
+* Beeps regularly (configurable) if float switch in an alert state
 
 ## TODO
 
-* Clean up the code, 'cos this is messy
-* Move configuration to a config file
-* Make beep duration configurable
-* Move other static things to be more centrally configurable
+* Clean up the code, 'cos this is messy (dupe pushover calls)
 * Move stuff to OOP, for better state management in particular
 
 ## Notes
 
 * Tested with NodeMCU ESP32 board.
 * Having the float switch on GPIO_2 has a nice side effect of lighting the LED when in an "OK" state
-
+* Put your settings into ```settings.py``` (note that this is excluded in the ```.gitignore``` file to stop you accidentally pushing sensitive info!)

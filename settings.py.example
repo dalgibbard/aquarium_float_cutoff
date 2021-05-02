@@ -1,0 +1,7 @@
+# Just a dummy local file to put the settings in so
+# I don't commit them in.
+
+wifi_name = 'MyNetworkName'
+wifi_pass = 'MyWifiPassword'
+pushover_user = 'My_Pushover_User_Token'
+pushover_token = 'My_Pushover_Application_Token'

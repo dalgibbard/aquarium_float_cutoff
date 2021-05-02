@@ -3,6 +3,7 @@ import ssl
 from machine import Pin, Timer
 import network
 from utime import sleep
+from settings import wifi_name, wifi_pass, pushover_user, pushover_token
 
     
 PUSHOVER_HOST = 'api.pushover.net'
@@ -11,16 +12,23 @@ PUSHOVER_PATH = '/1/messages.json'
 SAFE_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.- '
 
 #####################################
-#           SET THESE!              #
+#    SET THESE IN 'settings.py'!    #
 #####################################
 
 # WiFi Settings
-ssid = 'Your Network SSID'
-netpass = 'Your Wifi Password'
+ssid = wifi_name
+netpass = wifi_pass
 
 # Pushover Settings
-user = 'Get This From Pushover.net'
-token = 'Get This From Pushover.net'
+user = pushover_user
+token = pushover_token
+
+## Optional Settings
+beep_duration=1     # duration to beep for (secs); can be decimal, eg 0.5
+alarm_frequency=10  # how often to beep (secs) when in an alert state
+net_frequency=1800  # how often to beep (secs) when network is disconencted
+restart_delay=30    # if in a failed state, wait this many seconds before starting back up
+connect_count=60    # How frequently (secs) to retry network connection if it's down (too frequent will interrupt in-flight attempts!)
 
 #####################################
 #               END                 #
@@ -102,14 +110,14 @@ def get_float_state():
 
 def beep():
     buzzer.value(True)
-    sleep(0.5)
+    sleep(beep_duration)
     buzzer.value(False)
 
 def pushover_alert(wlan):
     if wlan.isconnected():
         try:
             print("Aquarium Float Trigger: ALERT")
-            sendMessage("Aquarium Float Trigger: ALERT", "The float switch has triggered. Check overflow!")
+            sendMessage("Aquarium Float Trigger: ALERT", "The float switch has triggered. Check overflow!", True)
             return True
         except Exception as err:
             print("Encountered error sending pushover message: {}".format(err))
@@ -149,7 +157,6 @@ def pushover_started(wlan):
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 
-connect_count=60
 while True:
     # Send a startup message
     if not startup_message_sent:
@@ -158,7 +165,7 @@ while True:
     # Maintain network connection. Beep hourly if not connected.
     if not wlan.isconnected():
         if not net_timer_init:
-            net_timer.init(mode=Timer.PERIODIC, period=3600000, callback=lambda t:beep()) # Beep every 1hr
+            net_timer.init(mode=Timer.PERIODIC, period=net_frequency*1000, callback=lambda t:beep()) # Beep every 1hr
             net_timer_init=True
         connect_count += 1
         if connect_count > 60:
@@ -188,13 +195,13 @@ while True:
             # if float_switch == vlow:
             powertail.value(0)
             sent_recovery_message = False
-            alarm_timer.init(mode=Timer.PERIODIC, period=30000, callback=lambda t:beep()) # Beep every 30s
+            alarm_timer.init(mode=Timer.PERIODIC, period=alarm_frequency*1000, callback=lambda t:beep()) # Beep every 30s
             alarm_timer_init = True
             sent_alert_message = pushover_alert(wlan)
                 
             ## Block further change state for 1minute to stop constant pump cycle loops
-            print("Sleeping monitoring for 30s")
-            sleep(30)
+            print("Sleeping monitoring for {}s".format(restart_delay))
+            sleep(restart_delay)
     else:
         # Retry sending recovery messages if it failed previously
         if not current_float_state and not sent_alert_message:
